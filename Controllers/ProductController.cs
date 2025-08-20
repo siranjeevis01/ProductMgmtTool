@@ -73,20 +73,19 @@ namespace ProductMgmt.Controllers
         }
 
         // GET: Edit
-// GET: Edit
-public IActionResult Edit(int id)
-{
-    var product = _context.Products
-        .Include(p => p.AttributeValues)
-        .FirstOrDefault(p => p.Id == id);
-    if (product == null) return NotFound();
+        public IActionResult Edit(int id)
+        {
+            var product = _context.Products
+                .Include(p => p.AttributeValues)
+                .FirstOrDefault(p => p.Id == id);
+            if (product == null) return NotFound();
 
-    ViewBag.Categories = _context.Categories.Include(c => c.AttributeDefinitions).ToList();
-    ViewBag.AttributeValues = product.AttributeValues
-        .ToDictionary(av => av.CategoryAttributeDefinitionId, av => av.Value);
+            ViewBag.Categories = _context.Categories.Include(c => c.AttributeDefinitions).ToList();
+            ViewBag.AttributeValues = product.AttributeValues
+                .ToDictionary(av => av.CategoryAttributeDefinitionId, av => av.Value);
 
-    return View(product);
-}
+            return View(product);
+        }
 
         // POST: Edit
         [HttpPost]

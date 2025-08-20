@@ -2,48 +2,58 @@
 @{
     ViewData["Title"] = "Edit Category";
 }
-<h1>Edit Category</h1>
 
-<form asp-action="Edit" method="post">
-    <input type="hidden" asp-for="Id"/>
+<h2 class="mb-4 text-primary">Edit Category</h2>
 
-    <div class="mb-3">
-        <label class="form-label">Name</label>
-        <input asp-for="Name" class="form-control"/>
-    </div>
+<div class="card shadow-sm rounded p-4 bg-white">
+    <form asp-action="Edit" method="post">
+        <input type="hidden" asp-for="Id"/>
 
-    <div class="mb-3">
-        <label class="form-label">Description</label>
-        <textarea asp-for="Description" class="form-control"></textarea>
-    </div>
+        <div class="mb-3">
+            <label class="form-label fw-bold">Name</label>
+            <input asp-for="Name" class="form-control"/>
+            <span asp-validation-for="Name" class="text-danger"></span>
+        </div>
 
-    <h4>Attributes</h4>
-    <div id="attributesContainer">
-        @foreach (var attr in Model?.AttributeDefinitions ?? new List<ProductMgmt.Models.CategoryAttributeDefinition>())
-        {
-            <div class="mb-3">
-                <label class="form-label">@attr.Name (@attr.DataType)</label>
-                <input type="hidden" name="AttributeDefinitions.Index" value="@attr.Id" />
-                <input name="AttributeDefinitions[@attr.Id].Name" value="@attr.Name" class="form-control"/>
-                <input name="AttributeDefinitions[@attr.Id].DataType" value="@attr.DataType" class="form-control"/>
-                <input type="checkbox" name="AttributeDefinitions[@attr.Id].IsRequired" value="true" @(attr.IsRequired ? "checked" : "") /> Required
-            </div>
-        }
-    </div>
+        <div class="mb-3">
+            <label class="form-label fw-bold">Description</label>
+            <textarea asp-for="Description" class="form-control"></textarea>
+            <span asp-validation-for="Description" class="text-danger"></span>
+        </div>
 
-    <button type="submit" class="btn btn-primary mt-3">Update</button>
-</form>
+        <h4 class="mt-4 mb-3">Attributes</h4>
+        <div id="attributesContainer">
+            @foreach (var attr in Model?.AttributeDefinitions ?? new List<ProductMgmt.Models.CategoryAttributeDefinition>())
+            {
+                <div class="mb-3 card p-3 shadow-sm rounded">
+                    <label class="form-label fw-bold">@attr.Name (@attr.DataType)</label>
+                    <input type="hidden" name="AttributeDefinitions.Index" value="@attr.Id" />
+                    <input name="AttributeDefinitions[@attr.Id].Name" value="@attr.Name" class="form-control mb-2"/>
+                    <input name="AttributeDefinitions[@attr.Id].DataType" value="@attr.DataType" class="form-control mb-2"/>
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" name="AttributeDefinitions[@attr.Id].IsRequired" value="true" @(attr.IsRequired ? "checked" : "") />
+                        <label class="form-check-label">Required</label>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-lg mt-3">Update Category</button>
+        <a asp-action="Index" class="btn btn-secondary btn-lg mt-3 ms-2">Back to List</a>
+    </form>
+</div>
 
 @section Scripts {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script>
+        // Dynamic attributes (if you select a different category in future enhancements)
         $('#categorySelect').change(function () {
             var attrs = $('#categorySelect option:selected').data('attributes');
             var html = '';
             if (attrs) {
                 attrs.forEach(a => {
-                    html += `<div class="mb-3">
-                                <label class="form-label">${a.name} (${a.dataType})</label>
+                    html += `<div class="mb-3 card p-3 shadow-sm rounded">
+                                <label class="form-label fw-bold">${a.name} (${a.dataType})</label>
                                 <input name="attributeValues[${a.id}]" class="form-control" />
                              </div>`;
                 });

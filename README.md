@@ -92,4 +92,5 @@ Hardcoding these attributes in the Product table would break normalization and r
 - **Screenshots**
   - ./Docs/screenshot-dashboard.png
   - ./Docs/screenshot-product-creation.png
+  - ./Docs/screenshot-category-creation.png
 

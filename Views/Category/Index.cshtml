@@ -4,48 +4,78 @@
     ViewData["Title"] = "Categories";
 }
 
-<h1>Categories</h1>
+<h2 class="mb-4 text-dark fw-bold">Categories</h2>
 
-<a class="btn btn-primary mb-3" asp-action="Create">Create New Category</a>
+<a class="btn btn-lg mb-4 fw-bold"
+   style="background: linear-gradient(135deg,#343a40,#6c757d); color:#ffd700;"
+   asp-action="Create">
+   <i class="bi bi-plus-circle me-2"></i> Create New Category
+</a>
 
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Description</th>
-            <th>Attributes</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var category in Model)
-        {
+<div class="table-responsive">
+    <table class="table table-hover align-middle shadow rounded animate__animated animate__fadeIn">
+        <thead class="table-dark text-white">
             <tr>
-                <td>@category.Name</td>
-                <td>@category.Description</td>
-                <td>
-                    @if (category.AttributeDefinitions != null && category.AttributeDefinitions.Any())
-                    {
-                        <ul>
-                            @foreach (var attr in category.AttributeDefinitions)
-                            {
-                                <li>@attr.Name (@attr.DataType) @if(attr.IsRequired){<span class="text-danger">*</span>}</li>
-                            }
-                        </ul>
-                    }
-                    else
-                    {
-                        <span>No attributes</span>
-                    }
-                </td>
-                <td>
-                    <a class="btn btn-info btn-sm" asp-action="Details" asp-route-id="@category.Id">Details</a>
-                    <a class="btn btn-warning btn-sm" asp-action="Edit" asp-route-id="@category.Id">Edit</a>
-                    <form asp-action="Delete" asp-route-id="@category.Id" method="post" style="display:inline">
-                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-                    </form>
-                </td>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Attributes</th>
+                <th>Actions</th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            @foreach (var category in Model)
+            {
+                <tr class="hover-row">
+                    <td class="fw-bold text-purple">@category.Name</td>
+                    <td>@category.Description</td>
+                    <td>
+                        @if (category.AttributeDefinitions != null && category.AttributeDefinitions.Any())
+                        {
+                            <ul class="mb-0">
+                                @foreach (var attr in category.AttributeDefinitions)
+                                {
+                                    <li>
+                                        <strong>@attr.Name</strong> (@attr.DataType)
+                                        @if(attr.IsRequired){<span class="text-danger">*</span>}
+                                    </li>
+                                }
+                            </ul>
+                        }
+                        else
+                        {
+                            <span class="text-muted fst-italic">No attributes</span>
+                        }
+                    </td>
+                    <td>
+                        <a class="btn btn-sm btn-info me-1 mb-1" asp-action="Details" asp-route-id="@category.Id"><i class="bi bi-eye"></i></a>
+                        <a class="btn btn-sm btn-warning me-1 mb-1" asp-action="Edit" asp-route-id="@category.Id"><i class="bi bi-pencil-square"></i></a>
+                        <form asp-action="Delete" asp-route-id="@category.Id" method="post" style="display:inline">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-sm btn-danger mb-1" onclick="return confirm('Are you sure?');">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<style>
+.hover-row:hover {
+    background: linear-gradient(90deg, #f0f0f0, #e0e0e0);
+    transform: scale(1.02);
+    transition: all 0.3s ease;
+}
+.text-purple {
+    color: #6f42c1;
+}
+.table {
+    border-radius: 12px;
+    overflow: hidden;
+}
+</style>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">

@@ -1,62 +1,105 @@
 @model ProductMgmt.Models.Product
 @{
-    ViewData["Title"] = "Create Product";
-    var categories = ViewBag.Categories as List<ProductMgmt.Models.Category>;
+    ViewData["Title"] = Model.Id == 0 ? "Create Product" : "Edit Product";
+    var categories = ViewBag.Categories as List<ProductMgmt.Models.Category> ?? new List<ProductMgmt.Models.Category>();
+    var attrValues = ViewBag.AttributeValues as Dictionary<int, string> ?? new Dictionary<int, string>();
 }
 
-<h2>Create Product</h2>
+<div class="container py-5">
+    <div class="card shadow-lg border-0 rounded-4 animate__animated animate__fadeIn">
+        <div class="card-header text-center text-white py-4" 
+             style="background: linear-gradient(135deg,#6a11cb,#2575fc); border-top-left-radius:1rem; border-top-right-radius:1rem;">
+            <h2 class="fw-bold">@ViewData["Title"]</h2>
+            <p class="mb-0">Fill in the product details below</p>
+        </div>
+        <div class="card-body p-5">
 
-<form asp-action="Create" method="post">
-    @Html.AntiForgeryToken()
+            <form asp-action="@(Model.Id == 0 ? "Create" : "Edit")" method="post">
+                @Html.AntiForgeryToken()
 
-    <div class="form-group mb-3">
-        <label for="Name">Name</label>
-        <input asp-for="Name" id="Name" name="Name" autocomplete="name" class="form-control" />
-        <span asp-validation-for="Name" class="text-danger"></span>
+                <!-- Product Name -->
+                <div class="form-floating mb-4">
+                    <input asp-for="Name" class="form-control" placeholder=" " />
+                    <label asp-for="Name"></label>
+                    <span asp-validation-for="Name" class="text-danger small"></span>
+                </div>
+
+                <!-- SKU -->
+                <div class="form-floating mb-4">
+                    <input asp-for="SKU" class="form-control" placeholder=" " />
+                    <label asp-for="SKU"></label>
+                    <span asp-validation-for="SKU" class="text-danger small"></span>
+                </div>
+
+                <!-- Price -->
+                <div class="form-floating mb-4">
+                    <input asp-for="Price" class="form-control" placeholder=" " />
+                    <label asp-for="Price"></label>
+                    <span asp-validation-for="Price" class="text-danger small"></span>
+                </div>
+
+                <!-- Category -->
+                <div class="form-floating mb-4">
+                    <select asp-for="CategoryId" class="form-select" id="CategoryId" asp-items="@(new SelectList(categories, "Id", "Name"))">
+                        <option value="">-- Select Category --</option>
+                    </select>
+                    <label asp-for="CategoryId"></label>
+                    <span asp-validation-for="CategoryId" class="text-danger small"></span>
+                </div>
+
+                <!-- Dynamic Attributes -->
+                <div id="attribute-container" class="animate__animated animate__fadeInUp">
+                    @foreach (var category in categories)
+                    {
+                        foreach (var attr in category.AttributeDefinitions ?? new List<ProductMgmt.Models.CategoryAttributeDefinition>())
+                        {
+                            var value = attrValues.ContainsKey(attr.Id) ? attrValues[attr.Id] : "";
+                            <div class="form-floating mb-3">
+                                <input type="text" class="form-control" name="attributeValues[@attr.Id]" value="@value" placeholder=" " />
+                                <label>@attr.Name (@attr.DataType)</label>
+                                @if (attr.IsRequired)
+                                {
+                                    <small class="text-danger">Required</small>
+                                }
+                            </div>
+                        }
+                    }
+                </div>
+
+                <!-- Buttons -->
+                <div class="d-flex justify-content-between mt-5">
+                    <a href="/Product" class="btn btn-outline-secondary btn-lg px-4">
+                        <i class="bi bi-arrow-left"></i> Cancel
+                    </a>
+                    <button type="submit" class="btn btn-primary btn-lg px-5 shadow-sm">
+                        <i class="bi bi-check-circle"></i> Save
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
-
-    <div class="form-group mb-3">
-        <label for="SKU">SKU</label>
-        <input asp-for="SKU" id="SKU" name="SKU" autocomplete="off" class="form-control" />
-        <span asp-validation-for="SKU" class="text-danger"></span>
-    </div>
-
-    <div class="form-group mb-3">
-        <label for="Price">Price</label>
-        <input asp-for="Price" id="Price" name="Price" autocomplete="off" class="form-control" />
-        <span asp-validation-for="Price" class="text-danger"></span>
-    </div>
-
-    <div class="form-group mb-3">
-        <label for="CategoryId">Category</label>
-        <select asp-for="CategoryId" id="CategoryId" name="CategoryId" class="form-select" asp-items="@(new SelectList(categories, "Id", "Name"))">
-            <option value="">-- Select Category --</option>
-        </select>
-        <span asp-validation-for="CategoryId" class="text-danger"></span>
-    </div>
-
-    <div id="attribute-container"></div>
-
-    <button type="submit" class="btn btn-primary">Save</button>
-</form>
+</div>
 
 @section Scripts {
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-$('#CategoryId').change(function () {
-    var categoryId = $(this).val();
-    var container = $('#attribute-container');
-    container.empty();
-    if (!categoryId) return;
+$(function(){
+    $('#CategoryId').change(function () {
+        var categoryId = $(this).val();
+        var container = $('#attribute-container');
+        container.empty();
+        if (!categoryId) return;
 
-    $.getJSON('/Product/GetAttributesForCategory', { categoryId: categoryId }, function (data) {
-        $.each(data, function (i, attr) {
-            var html = '<div class="form-group mb-3">';
-            html += '<label for="attr_' + attr.id + '">' + attr.name + ' (' + attr.dataType + ')</label>';
-            html += '<input type="text" class="form-control" id="attr_' + attr.id + '" name="attributeValues[' + attr.id + ']" autocomplete="off" />';
-            if (attr.isRequired) html += '<small class="text-danger">Required</small>';
-            html += '</div>';
-            container.append(html);
+        $.getJSON('/Product/GetAttributesForCategory', { categoryId: categoryId }, function (data) {
+            $.each(data, function (i, attr) {
+                var html = '<div class="form-floating mb-3 animate__animated animate__fadeInUp">';
+                html += '<input type="text" class="form-control" name="attributeValues[' + parseInt(attr.id) + ']" placeholder=" " />';
+                html += '<label>' + attr.name + ' (' + attr.dataType + ')</label>';
+                if (attr.isRequired) html += '<small class="text-danger">Required</small>';
+                html += '</div>';
+                container.append(html);
+            });
         });
     });
 });

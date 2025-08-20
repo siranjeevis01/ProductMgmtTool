@@ -3,53 +3,78 @@
     ViewData["Title"] = "Products";
 }
 
-<h2>Products</h2>
+<h2 class="mb-4 text-purple">Products</h2>
 
 <p>
-    <a asp-action="Create" class="btn btn-primary">Create New Product</a>
+    <a asp-action="Create" class="btn btn-lg fw-bold"
+       style="background: linear-gradient(135deg,#8e24aa,#4e0d3a); color:#ffd700;">
+       <i class="bi bi-plus-circle me-2"></i> Create New Product
+    </a>
 </p>
 
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>SKU</th>
-            <th>Price</th>
-            <th>Category</th>
-            <th>Attributes</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var product in Model)
-        {
-            <tr>
-                <td>@product.Name</td>
-                <td>@product.SKU</td>
-                <td>@product.Price</td>
-                <td>@product.Category?.Name</td>
-                <td>
-@if (product.AttributeValues != null)
-{
-    <ul>
-        @foreach (var attr in product.AttributeValues)
-        {
-            <li>@attr.CategoryAttributeDefinition?.Name : @attr.Value</li>
-        }
-    </ul>
-}
-                </td>
-                <td>
-                    <a asp-action="Details" asp-route-id="@product.Id" class="btn btn-sm btn-info">Details</a>
-                    <a asp-action="Edit" asp-route-id="@product.Id" class="btn btn-sm btn-warning">Edit</a>
+<div class="row g-4">
+    @foreach (var product in Model)
+    {
+        <div class="col-md-6 col-lg-4 animate__animated animate__fadeInUp">
+            <div class="card shadow-lg rounded-4 h-100 hover-shadow">
+                <div class="card-header text-white fw-bold"
+                     style="background: linear-gradient(135deg,#4e0d3a,#8e24aa);">
+                    @product.Name
+                </div>
+                <div class="card-body">
+                    <p><strong>SKU:</strong> @product.SKU</p>
+                    <p><strong>Price:</strong> <span class="text-success fw-bold">@product.Price.ToString("C")</span></p>
+                    <p><strong>Category:</strong> @product.Category?.Name</p>
+                    <p><strong>Attributes:</strong></p>
+                    @if (product.AttributeValues != null && product.AttributeValues.Any())
+                    {
+                        <ul class="list-group list-group-flush">
+                            @foreach (var attr in product.AttributeValues)
+                            {
+                                <li class="list-group-item border-0 p-1">
+                                    <strong class="text-purple">@attr.CategoryAttributeDefinition?.Name:</strong> 
+                                    <span class="text-dark">@attr.Value</span>
+                                </li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <span class="text-muted fst-italic">No attributes</span>
+                    }
+                </div>
+                <div class="card-footer d-flex justify-content-between bg-white border-0">
+                    <a asp-action="Details" asp-route-id="@product.Id" class="btn btn-sm btn-info">
+                        <i class="bi bi-eye"></i> Details
+                    </a>
+                    <a asp-action="Edit" asp-route-id="@product.Id" class="btn btn-sm btn-warning">
+                        <i class="bi bi-pencil-square"></i> Edit
+                    </a>
                     <form asp-action="Delete" asp-route-id="@product.Id" method="post" class="d-inline">
                         @Html.AntiForgeryToken()
-                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this product?');">
-                            Delete
+                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?');">
+                            <i class="bi bi-trash"></i> Delete
                         </button>
-                    </form>                
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+                    </form>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+.hover-shadow:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 25px rgba(0,0,0,0.15);
+    transition: all 0.3s ease-in-out;
+}
+.text-purple {
+    color: #8e24aa;
+}
+.card-header {
+    font-size: 1.2rem;
+}
+</style>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">

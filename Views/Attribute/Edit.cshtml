@@ -1,44 +1,49 @@
 @model ProductMgmt.Models.CategoryAttributeDefinition
+
 @{
     ViewData["Title"] = "Edit Attribute";
 }
 
-<h1>Edit Attribute</h1>
+<h2 class="mb-4 text-primary">Edit Attribute</h2>
 
-<form asp-action="Edit" method="post">
-    @Html.AntiForgeryToken()
+<div class="card shadow-sm rounded p-4 bg-white" style="max-width: 600px;">
+    <form asp-action="Edit" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="Id" />
 
-    <div class="mb-3">
-        <label class="form-label">Category</label>
-        <select asp-for="CategoryId" class="form-select" asp-items="ViewBag.Categories">
-            <option value="">-- Select Category --</option>
-        </select>
-        <span asp-validation-for="CategoryId" class="text-danger"></span>
-    </div>
+        <div class="mb-3">
+            <label class="form-label fw-semibold">Category</label>
+            <select asp-for="CategoryId" class="form-select" asp-items="ViewBag.Categories">
+                <option value="">-- Select Category --</option>
+            </select>
+            <span asp-validation-for="CategoryId" class="text-danger"></span>
+        </div>
 
-    <input type="hidden" asp-for="Id" />
+        <div class="mb-3">
+            <label class="form-label fw-semibold">Attribute Name</label>
+            <input asp-for="Name" class="form-control" placeholder="Enter attribute name" />
+            <span asp-validation-for="Name" class="text-danger"></span>
+        </div>
 
-    <div class="mb-3">
-        <label class="form-label">Name</label>
-        <input asp-for="Name" class="form-control" />
-        <span asp-validation-for="Name" class="text-danger"></span>
-    </div>
+        <div class="mb-3">
+            <label class="form-label fw-semibold">Data Type</label>
+            <select asp-for="DataType" class="form-select" asp-items="@(new SelectList(new[] { "string", "number", "date", "bool" }))">
+                <option value="">-- Select Data Type --</option>
+            </select>
+            <span asp-validation-for="DataType" class="text-danger"></span>
+        </div>
 
-    <div class="mb-3">
-        <label class="form-label">Data Type</label>
-        <select asp-for="DataType" class="form-select" asp-items="@(new SelectList(new[] { "string", "number", "date", "bool" }))">
-            <option value="">-- Select Data Type --</option>
-        </select>
-        <span asp-validation-for="DataType" class="text-danger"></span>
-    </div>
+        <div class="form-check mb-4">
+            <input asp-for="IsRequired" class="form-check-input" id="IsRequiredCheck" />
+            <label class="form-check-label fw-semibold" for="IsRequiredCheck">Required</label>
+        </div>
 
-    <div class="form-check mb-3">
-        <input asp-for="IsRequired" class="form-check-input" />
-        <label class="form-check-label">Required</label>
-    </div>
-
-    <button type="submit" class="btn btn-primary">Save</button>
-</form>
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary btn-lg">Save</button>
+            <a asp-action="Index" class="btn btn-secondary btn-lg">Cancel</a>
+        </div>
+    </form>
+</div>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}

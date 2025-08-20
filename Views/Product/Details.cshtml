@@ -4,50 +4,78 @@
     ViewData["Title"] = "Product Details";
 }
 
-<h2>Product Details</h2>
+<div class="container mt-5">
+    <div class="card shadow-lg border-0 rounded-4 animate__animated animate__fadeInUp">
 
-<div class="card">
-    <div class="card-body">
-        <dl class="row">
-            <dt class="col-sm-2">Name</dt>
-            <dd class="col-sm-10">@Model.Name</dd>
+        <!-- Header -->
+        <div class="card-header text-white rounded-top-4 text-center py-4"
+             style="background: linear-gradient(135deg, #cf3e3eff, #aa6524ff); color: #ffd700;">
+            <h2 class="fw-bold mb-0"><i class="bi bi-box-seam me-2"></i> Product Details</h2>
+        </div>
 
-            <dt class="col-sm-2">SKU</dt>
-            <dd class="col-sm-10">@Model.SKU</dd>
+        <!-- Body -->
+        <div class="card-body p-4">
+            <div class="row g-4">
+                <!-- Left side -->
+                <div class="col-md-6">
+                    <div class="p-3 mb-3 rounded-3 shadow-sm" style="background:#faf6ff;">
+                        <h5 class="fw-bold text-purple"><i class="bi bi-info-circle me-2"></i>Basic Info</h5>
+                        <hr>
+                        <p><strong class="text-secondary">Name:</strong> <span class="fw-semibold">@Model.Name</span></p>
+                        <p><strong class="text-secondary">SKU:</strong> <span class="fw-semibold">@Model.SKU</span></p>
+                        <p><strong class="text-secondary">Price:</strong> <span class="text-success fw-bold">@Model.Price.ToString("C")</span></p>
+                        <p><strong class="text-secondary">Category:</strong> @Model.Category?.Name</p>
+                    </div>
+                </div>
 
-            <dt class="col-sm-2">Price</dt>
-            <dd class="col-sm-10">@Model.Price.ToString("C")</dd>
+                <!-- Right side -->
+                <div class="col-md-6">
+                    <div class="p-3 mb-3 rounded-3 shadow-sm" style="background:#fff9f0;">
+                        <h5 class="fw-bold text-purple"><i class="bi bi-clock-history me-2"></i>Timestamps</h5>
+                        <hr>
+                        <p><strong class="text-secondary">Created At:</strong> @Model.CreatedAt.ToString("dd-MMM-yyyy HH:mm")</p>
+                        <p><strong class="text-secondary">Updated At:</strong>
+                            @(Model.UpdatedAt.HasValue ? Model.UpdatedAt.Value.ToString("dd-MMM-yyyy HH:mm") : "N/A")
+                        </p>
+                    </div>
+                </div>
+            </div>
 
-            <dt class="col-sm-2">Category</dt>
-            <dd class="col-sm-10">@Model.Category?.Name</dd>
-
-            <dt class="col-sm-2">Created At</dt>
-            <dd class="col-sm-10">@Model.CreatedAt.ToString("dd-MMM-yyyy HH:mm")</dd>
-
-            <dt class="col-sm-2">Updated At</dt>
-            <dd class="col-sm-10">
-                @(Model.UpdatedAt.HasValue ? Model.UpdatedAt.Value.ToString("dd-MMM-yyyy HH:mm") : "N/A")
-            </dd>
-
-            <dt class="col-sm-2">Attributes</dt>
-            <dd class="col-sm-10">
+            <!-- Attributes -->
+            <div class="p-3 mt-3 rounded-3 shadow-sm" style="background:#fdf7ff;">
+                <h5 class="fw-bold text-purple"><i class="bi bi-list-check me-2"></i>Attributes</h5>
+                <hr>
                 @if (Model.AttributeValues != null && Model.AttributeValues.Any())
                 {
-                    <ul>
+                    <div class="row">
                         @foreach (var attr in Model.AttributeValues)
                         {
-                            <li><strong>@attr.CategoryAttributeDefinition?.Name:</strong> @attr.Value</li>
+                            <div class="col-md-6 mb-2">
+                                <div class="border rounded-3 p-2 bg-white shadow-sm">
+                                    <strong class="text-dark">@attr.CategoryAttributeDefinition?.Name:</strong>
+                                    <span class="text-primary fw-semibold">@attr.Value</span>
+                                </div>
+                            </div>
                         }
-                    </ul>
+                    </div>
                 }
                 else
                 {
-                    <span>No attributes available.</span>
+                    <span class="text-muted fst-italic">No attributes available.</span>
                 }
-            </dd>
-        </dl>
+            </div>
 
-        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Edit</a>
-        <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+            <!-- Buttons -->
+            <div class="d-flex justify-content-between mt-4">
+                <a asp-action="Index" class="btn btn-outline-light px-4 border-2"
+                   style="border-color:#ffd700; color:#ffd700;">
+                    <i class="bi bi-arrow-left-circle"></i> Back to List
+                </a>
+                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn px-5 shadow-lg fw-bold"
+                   style="background: linear-gradient(135deg,#ffd700,#ffb400); color:#2c2c2c;">
+                    <i class="bi bi-pencil-square"></i> Edit
+                </a>
+            </div>
+        </div>
     </div>
 </div>
