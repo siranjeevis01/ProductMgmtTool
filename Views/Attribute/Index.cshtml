@@ -1,0 +1,38 @@
+@model IEnumerable<ProductMgmt.Models.CategoryAttributeDefinition>
+@{
+    ViewData["Title"] = "Attributes";
+}
+
+<h1>Attributes</h1>
+<a class="btn btn-primary mb-3" asp-action="Create">Create New</a>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Category</th>
+            <th>DataType</th>
+            <th>Required</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach(var a in Model)
+{
+    <tr>
+        <td>@a.Name</td>
+        <td>@a.Category?.Name</td>
+        <td>@a.DataType</td>
+        <td>@(a.IsRequired ? "Yes" : "No")</td>
+        <td>
+            <a class="btn btn-info btn-sm" asp-action="Details" asp-route-id="@a.Id">Details</a>
+            <a class="btn btn-warning btn-sm" asp-action="Edit" asp-route-id="@a.Id">Edit</a>
+            <form method="post" asp-action="Delete" asp-route-id="@a.Id" style="display:inline">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+            </form>
+        </td>
+    </tr>
+}
+    </tbody>
+</table>

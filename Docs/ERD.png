@@ -1,0 +1,24 @@
++----------------+       +-----------------------------+
+|    Category    |       |   CategoryAttributeDefinition |
++----------------+       +-----------------------------+
+| -Id: int (PK)  |1    * | -Id: int (PK)               |
+| -Name: string  |<----->| -Name: string               |
+| -Slug: string  |       | -DataType: string           |
+| -Description   |       | -IsRequired: bool           |
+| -CreatedAt     |       | -DisplayOrder: int          |
+| -UpdatedAt     |       | -CategoryId: int (FK)       |
++----------------+       +-----------------------------+
+          ^                         ^
+          | 1                       | *
+          |                         |
++----------------+       +-----------------------+
+|    Product     |       | ProductAttributeValue |
++----------------+       +-----------------------+
+| -Id: int (PK)  |1    * | -Id: int (PK)        |
+| -Name: string  |<----->| -Value: string       |
+| -SKU: string   |       | -ProductId: int (FK) |
+| -Price: decimal|       | -CategoryAttributeDefinitionId: int (FK) |
+| -CategoryId: int (FK)  |
+| -CreatedAt     |
+| -UpdatedAt     |
++----------------+

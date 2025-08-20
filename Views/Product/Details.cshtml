@@ -1,0 +1,53 @@
+@model ProductMgmt.Models.Product
+
+@{
+    ViewData["Title"] = "Product Details";
+}
+
+<h2>Product Details</h2>
+
+<div class="card">
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-2">Name</dt>
+            <dd class="col-sm-10">@Model.Name</dd>
+
+            <dt class="col-sm-2">SKU</dt>
+            <dd class="col-sm-10">@Model.SKU</dd>
+
+            <dt class="col-sm-2">Price</dt>
+            <dd class="col-sm-10">@Model.Price.ToString("C")</dd>
+
+            <dt class="col-sm-2">Category</dt>
+            <dd class="col-sm-10">@Model.Category?.Name</dd>
+
+            <dt class="col-sm-2">Created At</dt>
+            <dd class="col-sm-10">@Model.CreatedAt.ToString("dd-MMM-yyyy HH:mm")</dd>
+
+            <dt class="col-sm-2">Updated At</dt>
+            <dd class="col-sm-10">
+                @(Model.UpdatedAt.HasValue ? Model.UpdatedAt.Value.ToString("dd-MMM-yyyy HH:mm") : "N/A")
+            </dd>
+
+            <dt class="col-sm-2">Attributes</dt>
+            <dd class="col-sm-10">
+                @if (Model.AttributeValues != null && Model.AttributeValues.Any())
+                {
+                    <ul>
+                        @foreach (var attr in Model.AttributeValues)
+                        {
+                            <li><strong>@attr.CategoryAttributeDefinition?.Name:</strong> @attr.Value</li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <span>No attributes available.</span>
+                }
+            </dd>
+        </dl>
+
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Edit</a>
+        <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+    </div>
+</div>

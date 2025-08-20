@@ -1,0 +1,52 @@
+@model ProductMgmt.Models.Category
+@{
+    ViewData["Title"] = "Create Category";
+}
+<h1>Create Category</h1>
+
+<form asp-action="Create" method="post">
+    <div class="mb-3">
+        <label class="form-label">Name</label>
+        <input asp-for="Name" class="form-control"/>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Description</label>
+        <textarea asp-for="Description" class="form-control"></textarea>
+    </div>
+
+    <h4>Attributes</h4>
+    <div id="attributesContainer">
+        @foreach (var attr in Model?.AttributeDefinitions ?? new List<ProductMgmt.Models.CategoryAttributeDefinition>())
+        {
+            <div class="mb-3">
+                <label class="form-label">@attr.Name (@attr.DataType)</label>
+                <input type="hidden" name="AttributeDefinitions.Index" value="@attr.Id" />
+                <input name="AttributeDefinitions[@attr.Id].Name" value="@attr.Name" class="form-control"/>
+                <input name="AttributeDefinitions[@attr.Id].DataType" value="@attr.DataType" class="form-control"/>
+                <input type="checkbox" name="AttributeDefinitions[@attr.Id].IsRequired" value="true" @(attr.IsRequired ? "checked" : "") /> Required
+            </div>
+        }
+    </div>
+
+    <button type="submit" class="btn btn-primary mt-3">Save</button>
+</form>
+
+@section Scripts{
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script>
+    $('#categorySelect').change(function(){
+        var attrs = $('#categorySelect option:selected').data('attributes');
+        var html = '';
+        if(attrs){
+            attrs.forEach(a => {
+                html += `<div class="mb-3">
+                            <label class="form-label">${a.name} (${a.dataType})</label>
+                            <input name="attributeValues[${a.id}]" class="form-control" />
+                         </div>`;
+            });
+        }
+        $('#attributesContainer').html(html);
+    });
+</script>
+}

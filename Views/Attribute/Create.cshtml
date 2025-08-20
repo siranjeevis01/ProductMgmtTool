@@ -1,0 +1,43 @@
+@model ProductMgmt.Models.CategoryAttributeDefinition
+@{
+    ViewData["Title"] = "Create Attribute";
+}
+
+<h1>Create Attribute</h1>
+
+<form asp-action="Create" method="post">
+    @Html.AntiForgeryToken()
+
+    <div class="mb-3">
+        <label class="form-label">Category</label>
+        <select asp-for="CategoryId" class="form-select" asp-items="ViewBag.Categories">
+            <option value="">-- Select Category --</option>
+        </select>
+        <span asp-validation-for="CategoryId" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Name</label>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Data Type</label>
+        <select asp-for="DataType" class="form-select" asp-items="@(new SelectList(new[] { "string", "number", "date", "bool" }))">
+            <option value="">-- Select Data Type --</option>
+        </select>
+        <span asp-validation-for="DataType" class="text-danger"></span>
+    </div>
+
+    <div class="form-check mb-3">
+        <input asp-for="IsRequired" class="form-check-input" />
+        <label class="form-check-label">Required</label>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Save</button>
+</form>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

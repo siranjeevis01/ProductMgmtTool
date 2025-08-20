@@ -1,0 +1,63 @@
++---------------------+
+|     Category        |
++---------------------+
+| -Id : int           |
+| -Name : string      |
+| -Slug : string      |
+| -Description : string|
+| -CreatedAt : DateTime|
+| -UpdatedAt : DateTime?|
++---------------------+
+| +CRUD Methods()     |
++---------------------+
+          |
+          | 1
+          *
++-------------------------------+
+| CategoryAttributeDefinition   |
++-------------------------------+
+| -Id : int                     |
+| -Name : string                |
+| -DataType : string            |
+| -IsRequired : bool            |
+| -DisplayOrder : int           |
+| -CategoryId : int             |
+| -CreatedAt : DateTime         |
+| -UpdatedAt : DateTime?        |
++-------------------------------+
+| +CRUD Methods()               |
++-------------------------------+
+          |
+          | *
+          1
++---------------------+
+| ProductAttributeValue|
++---------------------+
+| -Id : int           |
+| -ProductId : int    |
+| -CategoryAttributeDefinitionId : int|
+| -Value : string     |
++---------------------+
+| +CRUD Methods()     |
++---------------------+
+
++----------------+
+|    Product     |
++----------------+
+| -Id : int      |
+| -Name : string |
+| -SKU : string  |
+| -Price : decimal|
+| -CategoryId : int|
+| -CreatedAt : DateTime|
+| -UpdatedAt : DateTime?|
++----------------+
+| +CRUD Methods()|
++----------------+
+
++--------------------------+
+| ProductValidationService |
++--------------------------+
+| +ValidateProduct(Product) : bool |
+| +GetValidationErrors() : List<string> |
++--------------------------+

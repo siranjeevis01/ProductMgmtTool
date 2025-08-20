@@ -1,0 +1,46 @@
+@model ProductMgmt.Controllers.DashboardViewModel
+
+<h2>Dashboard</h2>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card p-3 mb-3">
+            <h5>Total Categories</h5>
+            <p>@Model.TotalCategories</p>
+            <a href="/Category" class="btn btn-primary">View Categories</a>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card p-3 mb-3">
+            <h5>Total Products</h5>
+            <p>@Model.TotalProducts</p>
+            <a href="/Product" class="btn btn-primary">View Products</a>
+        </div>
+    </div>
+</div>
+
+@if (Model.RecentCategories.Any())
+{
+    <h4>Recent Categories</h4>
+    <ul class="list-group mb-3">
+        @foreach(var cat in Model.RecentCategories)
+        {
+            <li class="list-group-item">
+                @cat.Name (@cat.CreatedAt.ToString("yyyy-MM-dd"))
+            </li>
+        }
+    </ul>
+}
+
+@if (Model.RecentProducts.Any())
+{
+    <h4>Recent Products</h4>
+    <ul class="list-group">
+        @foreach(var prod in Model.RecentProducts)
+        {
+            <li class="list-group-item">
+                @prod.Name (Category: @prod.Category?.Name)
+            </li>
+        }
+    </ul>
+}

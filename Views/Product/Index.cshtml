@@ -1,0 +1,55 @@
+@model IEnumerable<ProductMgmt.Models.Product>
+@{
+    ViewData["Title"] = "Products";
+}
+
+<h2>Products</h2>
+
+<p>
+    <a asp-action="Create" class="btn btn-primary">Create New Product</a>
+</p>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>SKU</th>
+            <th>Price</th>
+            <th>Category</th>
+            <th>Attributes</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var product in Model)
+        {
+            <tr>
+                <td>@product.Name</td>
+                <td>@product.SKU</td>
+                <td>@product.Price</td>
+                <td>@product.Category?.Name</td>
+                <td>
+@if (product.AttributeValues != null)
+{
+    <ul>
+        @foreach (var attr in product.AttributeValues)
+        {
+            <li>@attr.CategoryAttributeDefinition?.Name : @attr.Value</li>
+        }
+    </ul>
+}
+                </td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@product.Id" class="btn btn-sm btn-info">Details</a>
+                    <a asp-action="Edit" asp-route-id="@product.Id" class="btn btn-sm btn-warning">Edit</a>
+                    <form asp-action="Delete" asp-route-id="@product.Id" method="post" class="d-inline">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this product?');">
+                            Delete
+                        </button>
+                    </form>                
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
