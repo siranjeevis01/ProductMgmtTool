@@ -4,39 +4,78 @@
     ViewData["Title"] = "Categories";
 }
 
-<h2 class="mb-4 text-dark fw-bold">Categories</h2>
+<h2 class="mb-4 fw-bold animate__animated animate__fadeInDown text-gradient">
+    <i class="bi bi-folder2-open me-2"></i> Categories
+</h2>
 
-<a class="btn btn-lg mb-4 fw-bold"
-   style="background: linear-gradient(135deg,#343a40,#6c757d); color:#ffd700;"
-   asp-action="Create">
-   <i class="bi bi-plus-circle me-2"></i> Create New Category
-</a>
+<!-- Controls: Create + Search + Filters + Sort -->
+<div class="d-flex flex-column flex-md-row justify-content-between mb-3 gap-2 align-items-start align-items-md-center">
+    <!-- Create button -->
+    <a class="btn btn-lg fw-bold shadow-lg create-btn animate__animated animate__fadeIn" 
+       asp-action="Create">
+       <i class="bi bi-plus-circle me-2"></i> Create New Category
+    </a>
 
-<div class="table-responsive">
-    <table class="table table-hover align-middle shadow rounded animate__animated animate__fadeIn">
-        <thead class="table-dark text-white">
+    <!-- Filters/Search -->
+    <div class="d-flex flex-column flex-md-row gap-2 w-100 w-md-auto">
+        <input type="text" id="searchInput" class="form-control animate__animated animate__fadeIn" 
+               placeholder="🔍 Search categories..." />
+        <select id="attributeFilter" class="form-select animate__animated animate__fadeIn">
+            <option value="">All Attributes</option>
+            <option value="0">No attributes</option>
+            <option value="1">1 or more</option>
+            <option value="2">2 or more</option>
+            <option value="3">3 or more</option>
+        </select>
+        <select id="sortSelect" class="form-select animate__animated animate__fadeIn">
+            <option value="name">Sort by Name</option>
+            <option value="attributes">Sort by Attribute Count</option>
+        </select>
+    </div>
+</div>
+
+<div class="table-responsive animate__animated animate__fadeInUp">
+    <table class="table table-hover align-middle shadow rounded" id="categoriesTable">
+        <thead class="table-gradient text-white">
             <tr>
+                <th>Image</th>
                 <th>Name</th>
                 <th>Description</th>
                 <th>Attributes</th>
-                <th>Actions</th>
+                <th class="text-center">Actions</th>
             </tr>
         </thead>
         <tbody>
             @foreach (var category in Model)
             {
-                <tr class="hover-row">
+                <tr class="hover-row shadow-sm"
+                    data-name="@category.Name.ToLower()"
+                    data-attribute-count="@((category.AttributeDefinitions?.Count() ?? 0))">
+                    <td>
+                        @if (!string.IsNullOrEmpty(category.ImageUrl))
+                        {
+                            <img src="@category.ImageUrl" alt="@category.Name" class="img-thumbnail category-img" />
+                        }
+                        else
+                        {
+                            <span class="text-muted fst-italic">No image</span>
+                        }
+                    </td>
                     <td class="fw-bold text-purple">@category.Name</td>
                     <td>@category.Description</td>
                     <td>
                         @if (category.AttributeDefinitions != null && category.AttributeDefinitions.Any())
                         {
-                            <ul class="mb-0">
+                            <ul class="mb-0 list-unstyled">
                                 @foreach (var attr in category.AttributeDefinitions)
                                 {
-                                    <li>
-                                        <strong>@attr.Name</strong> (@attr.DataType)
-                                        @if(attr.IsRequired){<span class="text-danger">*</span>}
+                                    <li class="mb-1">
+                                        <span class="badge bg-gradient-secondary">@attr.Name</span>
+                                        <span class="badge bg-gradient-info">@attr.DataType</span>
+                                        @if(attr.IsRequired)
+                                        {
+                                            <span class="badge bg-gradient-danger">Required</span>
+                                        }
                                     </li>
                                 }
                             </ul>
@@ -46,12 +85,16 @@
                             <span class="text-muted fst-italic">No attributes</span>
                         }
                     </td>
-                    <td>
-                        <a class="btn btn-sm btn-info me-1 mb-1" asp-action="Details" asp-route-id="@category.Id"><i class="bi bi-eye"></i></a>
-                        <a class="btn btn-sm btn-warning me-1 mb-1" asp-action="Edit" asp-route-id="@category.Id"><i class="bi bi-pencil-square"></i></a>
+                    <td class="text-center">
+                        <a class="btn btn-sm btn-gradient-info me-1 action-btn" asp-action="Details" asp-route-id="@category.Id">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                        <a class="btn btn-sm btn-gradient-warning me-1 action-btn" asp-action="Edit" asp-route-id="@category.Id">
+                            <i class="bi bi-pencil-square"></i>
+                        </a>
                         <form asp-action="Delete" asp-route-id="@category.Id" method="post" style="display:inline">
                             @Html.AntiForgeryToken()
-                            <button type="submit" class="btn btn-sm btn-danger mb-1" onclick="return confirm('Are you sure?');">
+                            <button type="submit" class="btn btn-sm btn-gradient-danger action-btn" onclick="return confirm('Are you sure?');">
                                 <i class="bi bi-trash"></i>
                             </button>
                         </form>
@@ -62,19 +105,96 @@
     </table>
 </div>
 
+@section Scripts {
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script>
+$(document).ready(function() {
+    function filterAndSort() {
+        var search = $("#searchInput").val().toLowerCase();
+        var attrFilter = $("#attributeFilter").val();
+        var sortBy = $("#sortSelect").val();
+
+        var rows = $("#categoriesTable tbody tr").get();
+
+        $.each(rows, function(_, row){
+            var name = $(row).data("name");
+            var attrCount = $(row).data("attribute-count");
+            var show = true;
+            if(search && !name.includes(search)) show = false;
+            if(attrFilter) {
+                if(attrFilter === "0" && attrCount > 0) show = false;
+                else if(attrFilter !== "0" && attrCount < parseInt(attrFilter)) show = false;
+            }
+            $(row).toggle(show);
+        });
+
+        rows.sort(function(a, b){
+            if(sortBy === "name") return $(a).find("td:eq(1)").text().localeCompare($(b).find("td:eq(1)").text());
+            return $(b).data("attribute-count") - $(a).data("attribute-count");
+        });
+
+        $.each(rows, function(_, row){ $("#categoriesTable tbody").append(row); });
+    }
+
+    $("#searchInput, #attributeFilter, #sortSelect").on("input change", filterAndSort);
+});
+</script>
+}
+
 <style>
-.hover-row:hover {
-    background: linear-gradient(90deg, #f0f0f0, #e0e0e0);
-    transform: scale(1.02);
+/* Gradient Header */
+.table-gradient {
+    background: linear-gradient(135deg,#6a11cb,#2575fc);
+    border-radius: 12px 12px 0 0;
+}
+
+/* Hover row effect */
+.hover-row {
     transition: all 0.3s ease;
 }
-.text-purple {
-    color: #6f42c1;
+.hover-row:hover {
+    background: linear-gradient(90deg, #f3f4f6, #e0f7fa);
+    transform: scale(1.02);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.15);
 }
-.table {
-    border-radius: 12px;
-    overflow: hidden;
+
+/* Action Buttons Gradients */
+.btn-gradient-info { background: linear-gradient(135deg,#36d1dc,#5b86e5); color:#fff; border:none; }
+.btn-gradient-info:hover { transform: scale(1.05); box-shadow: 0 6px 18px rgba(0,0,0,0.2); }
+
+.btn-gradient-warning { background: linear-gradient(135deg,#f7971e,#ffd200); color:#fff; border:none; }
+.btn-gradient-warning:hover { transform: scale(1.05); box-shadow: 0 6px 18px rgba(0,0,0,0.2); }
+
+.btn-gradient-danger { background: linear-gradient(135deg,#ff416c,#ff4b2b); color:#fff; border:none; }
+.btn-gradient-danger:hover { transform: scale(1.05); box-shadow: 0 6px 18px rgba(0,0,0,0.2); }
+
+/* Create Button */
+.create-btn {
+    background: linear-gradient(135deg,#ff9a9e,#fad0c4);
+    color:#fff;
+    border:none;
 }
+.create-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+}
+
+/* Attribute badges gradient */
+.bg-gradient-secondary { background: linear-gradient(135deg,#a1c4fd,#c2e9fb); color:#fff; }
+.bg-gradient-info { background: linear-gradient(135deg,#36d1dc,#5b86e5); color:#fff; }
+.bg-gradient-danger { background: linear-gradient(135deg,#ff416c,#ff4b2b); color:#fff; }
+
+/* Text & Images */
+.text-purple { color:#6f42c1; font-weight:bold; }
+.category-img { border-radius:8px; max-width:80px; max-height:80px; object-fit:cover; }
+
+/* Responsive tweaks */
+.table { border-radius: 12px; overflow: hidden; }
+#searchInput, #sortSelect, #attributeFilter { border-radius:8px; padding:6px 12px; }
+
+/* Animate.css tweaks */
+.animate__fadeIn, .animate__fadeInUp, .animate__fadeInDown { animation-duration:0.7s; }
+.text-gradient { background: linear-gradient(135deg,#6a11cb,#2575fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 </style>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>

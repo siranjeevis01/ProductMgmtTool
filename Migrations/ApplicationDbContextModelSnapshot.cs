@@ -37,6 +37,9 @@ namespace ProductMgmtTool.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
+                    b.Property<string>("ImageUrl")
+                        .HasColumnType("longtext");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("longtext");
@@ -108,6 +111,9 @@ namespace ProductMgmtTool.Migrations
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime(6)");
+
+                    b.Property<string>("ImageUrl")
+                        .HasColumnType("longtext");
 
                     b.Property<string>("Name")
                         .IsRequired()

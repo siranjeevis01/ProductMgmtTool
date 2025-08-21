@@ -17,7 +17,6 @@ namespace ProductMgmt.Controllers
             var totalCategories = await _context.Categories.CountAsync();
             var totalProducts = await _context.Products.CountAsync();
 
-            // Optionally, fetch recent products or categories for a richer dashboard
             var recentCategories = await _context.Categories
                 .OrderByDescending(c => c.CreatedAt)
                 .Take(5)

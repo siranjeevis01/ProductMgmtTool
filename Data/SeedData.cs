@@ -7,7 +7,7 @@ namespace ProductMgmt.Data
     {
         public static void Initialize(ApplicationDbContext context)
         {
-            context.Database.Migrate(); // Apply migrations if not applied
+            context.Database.Migrate(); 
 
             // Seed Categories
             if (!context.Categories.Any())
@@ -17,7 +17,8 @@ namespace ProductMgmt.Data
                     Name = "Smartphones",
                     Slug = "smartphones",
                     Description = "All types of smartphones",
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = DateTime.UtcNow,
+                    ImageUrl = "/images/categories/smartphones.png"
                 };
 
                 var dresses = new Category
@@ -25,7 +26,8 @@ namespace ProductMgmt.Data
                     Name = "Dresses",
                     Slug = "dresses",
                     Description = "Fashion dresses for all occasions",
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = DateTime.UtcNow,
+                    ImageUrl = "/images/categories/dresses.png"
                 };
 
                 context.Categories.AddRange(smartphones, dresses);
@@ -58,7 +60,7 @@ namespace ProductMgmt.Data
                 context.SaveChanges();
             }
 
-            // Seed Products
+            // Seed Products with online images
             if (!context.Products.Any())
             {
                 var smartphoneCategory = context.Categories.First(c => c.Slug == "smartphones");
@@ -66,10 +68,30 @@ namespace ProductMgmt.Data
 
                 var products = new List<Product>
                 {
-                    new() { Name = "iPhone 15", SKU = "IP15", Price = 999.99m, CategoryId = smartphoneCategory.Id, CreatedAt = DateTime.UtcNow },
-                    new() { Name = "Samsung Galaxy S25", SKU = "SGS25", Price = 899.99m, CategoryId = smartphoneCategory.Id, CreatedAt = DateTime.UtcNow },
-                    new() { Name = "Red Dress", SKU = "RD01", Price = 79.99m, CategoryId = dressCategory.Id, CreatedAt = DateTime.UtcNow },
-                    new() { Name = "Blue Dress", SKU = "BD01", Price = 69.99m, CategoryId = dressCategory.Id, CreatedAt = DateTime.UtcNow }
+                    new() { 
+                        Name = "iPhone 15", SKU = "IP15", Price = 999.99m, 
+                        CategoryId = smartphoneCategory.Id, 
+                        CreatedAt = DateTime.UtcNow,
+                        ImageUrl = "/images/products/iphone15.png"
+                    },
+                    new() { 
+                        Name = "Samsung Galaxy S25", SKU = "SGS25", Price = 899.99m, 
+                        CategoryId = smartphoneCategory.Id, 
+                        CreatedAt = DateTime.UtcNow,
+                        ImageUrl = "/images/products/galaxy-s25galaxy-s25.png"
+                    },
+                    new() { 
+                        Name = "Red Dress", SKU = "RD01", Price = 79.99m, 
+                        CategoryId = dressCategory.Id, 
+                        CreatedAt = DateTime.UtcNow,
+                        ImageUrl = "/images/products/red-dress.png"
+                    },
+                    new() { 
+                        Name = "Blue Dress", SKU = "BD01", Price = 69.99m, 
+                        CategoryId = dressCategory.Id, 
+                        CreatedAt = DateTime.UtcNow,
+                        ImageUrl = "/images/products/blue-dress.png"
+                    }
                 };
 
                 context.Products.AddRange(products);

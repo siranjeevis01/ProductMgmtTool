@@ -29,6 +29,7 @@ namespace ProductMgmt.Controllers
         }
 
         // GET: Create
+        [HttpGet]
         public IActionResult Create()
         {
             ViewBag.Categories = _context.Categories.Include(c => c.AttributeDefinitions).ToList();
@@ -38,7 +39,7 @@ namespace ProductMgmt.Controllers
         // POST: Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(Product product, [FromForm] Dictionary<int, string> attributeValues)
+        public IActionResult Create(Product product, [FromForm] Dictionary<int, string> attributeValues, IFormFile? ImageFile)
         {
             var (isValid, errors) = _validationService.ValidateProduct(product, attributeValues ?? new Dictionary<int, string>());
             foreach (var err in errors) ModelState.AddModelError(err.Key, err.Value);
@@ -49,12 +50,30 @@ namespace ProductMgmt.Controllers
                 return View(product);
             }
 
+            // Save image if uploaded
+            if (ImageFile != null && ImageFile.Length > 0)
+            {
+                var uploads = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images/products");
+                if (!Directory.Exists(uploads)) Directory.CreateDirectory(uploads);
+
+                var fileName = Guid.NewGuid().ToString() + Path.GetExtension(ImageFile.FileName);
+                var filePath = Path.Combine(uploads, fileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    ImageFile.CopyTo(stream);
+                }
+
+                product.ImageUrl = "/images/products/" + fileName;
+            }
+
             product.Slug = product.Name.Trim().ToLower().Replace(" ", "-");
             product.CreatedAt = DateTime.UtcNow;
 
             _context.Products.Add(product);
-            _context.SaveChanges(); // get product.Id
+            _context.SaveChanges();
 
+            // Save dynamic attributes
             if (attributeValues != null)
             {
                 foreach (var kvp in attributeValues)
@@ -63,7 +82,7 @@ namespace ProductMgmt.Controllers
                     {
                         ProductId = product.Id,
                         CategoryAttributeDefinitionId = kvp.Key,
-                        Value = kvp.Value
+                        Value = kvp.Value ?? string.Empty
                     });
                 }
                 _context.SaveChanges();
@@ -73,11 +92,13 @@ namespace ProductMgmt.Controllers
         }
 
         // GET: Edit
+        [HttpGet]
         public IActionResult Edit(int id)
         {
             var product = _context.Products
                 .Include(p => p.AttributeValues)
                 .FirstOrDefault(p => p.Id == id);
+
             if (product == null) return NotFound();
 
             ViewBag.Categories = _context.Categories.Include(c => c.AttributeDefinitions).ToList();
@@ -90,7 +111,7 @@ namespace ProductMgmt.Controllers
         // POST: Edit
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(Product product, [FromForm] Dictionary<int, string> attributeValues)
+        public IActionResult Edit(Product product, [FromForm] Dictionary<int, string> attributeValues, IFormFile? ImageFile)
         {
             var (isValid, errors) = _validationService.ValidateProduct(product, attributeValues ?? new Dictionary<int, string>());
             foreach (var err in errors) ModelState.AddModelError(err.Key, err.Value);
@@ -110,6 +131,24 @@ namespace ProductMgmt.Controllers
                 existing.CategoryId = product.CategoryId;
                 existing.UpdatedAt = DateTime.UtcNow;
 
+                // Update image if uploaded
+                if (ImageFile != null && ImageFile.Length > 0)
+                {
+                    var uploads = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images/products");
+                    if (!Directory.Exists(uploads)) Directory.CreateDirectory(uploads);
+
+                    var fileName = Guid.NewGuid().ToString() + Path.GetExtension(ImageFile.FileName);
+                    var filePath = Path.Combine(uploads, fileName);
+
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        ImageFile.CopyTo(stream);
+                    }
+
+                    existing.ImageUrl = "/images/products/" + fileName;
+                }
+
+                // Update dynamic attributes
                 _context.ProductAttributeValues.RemoveRange(existing.AttributeValues);
 
                 if (attributeValues != null)
@@ -120,7 +159,7 @@ namespace ProductMgmt.Controllers
                         {
                             ProductId = existing.Id,
                             CategoryAttributeDefinitionId = kvp.Key,
-                            Value = kvp.Value
+                            Value = kvp.Value ?? string.Empty
                         });
                     }
                 }
@@ -139,6 +178,7 @@ namespace ProductMgmt.Controllers
                 .Include(p => p.AttributeValues)
                     .ThenInclude(av => av.CategoryAttributeDefinition)
                 .FirstOrDefault(p => p.Id == id);
+
             if (product == null) return NotFound();
 
             return View(product);
@@ -159,7 +199,7 @@ namespace ProductMgmt.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // For dynamic attributes
+        // Dynamic attributes for category
         public IActionResult GetAttributesForCategory(int categoryId)
         {
             var attributes = _context.CategoryAttributeDefinitions

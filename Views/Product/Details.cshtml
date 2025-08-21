@@ -9,15 +9,29 @@
 
         <!-- Header -->
         <div class="card-header text-white rounded-top-4 text-center py-4"
-             style="background: linear-gradient(135deg, #cf3e3eff, #aa6524ff); color: #ffd700;">
+             style="background: linear-gradient(135deg, #6a11cb, #2575fc); color: #ffd700;">
             <h2 class="fw-bold mb-0"><i class="bi bi-box-seam me-2"></i> Product Details</h2>
         </div>
 
         <!-- Body -->
         <div class="card-body p-4">
             <div class="row g-4">
-                <!-- Left side -->
-                <div class="col-md-6">
+                <!-- Left side: Image -->
+                <div class="col-md-4 text-center">
+                    @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                    {
+                        <img src="@Model.ImageUrl" alt="@Model.Name" class="img-fluid rounded-4 shadow-sm mb-3" style="max-height:300px; object-fit:cover;" />
+                    }
+                    else
+                    {
+                        <div class="border rounded-4 shadow-sm p-5 text-muted fst-italic">
+                            No Image Available
+                        </div>
+                    }
+                </div>
+
+                <!-- Right side: Basic Info & Timestamps -->
+                <div class="col-md-8">
                     <div class="p-3 mb-3 rounded-3 shadow-sm" style="background:#faf6ff;">
                         <h5 class="fw-bold text-purple"><i class="bi bi-info-circle me-2"></i>Basic Info</h5>
                         <hr>
@@ -26,10 +40,7 @@
                         <p><strong class="text-secondary">Price:</strong> <span class="text-success fw-bold">@Model.Price.ToString("C")</span></p>
                         <p><strong class="text-secondary">Category:</strong> @Model.Category?.Name</p>
                     </div>
-                </div>
 
-                <!-- Right side -->
-                <div class="col-md-6">
                     <div class="p-3 mb-3 rounded-3 shadow-sm" style="background:#fff9f0;">
                         <h5 class="fw-bold text-purple"><i class="bi bi-clock-history me-2"></i>Timestamps</h5>
                         <hr>
@@ -45,13 +56,13 @@
             <div class="p-3 mt-3 rounded-3 shadow-sm" style="background:#fdf7ff;">
                 <h5 class="fw-bold text-purple"><i class="bi bi-list-check me-2"></i>Attributes</h5>
                 <hr>
-                @if (Model.AttributeValues != null && Model.AttributeValues.Any())
+                @if (Model.AttributeValues != null && Model.AttributeValues.Any(a => !string.IsNullOrWhiteSpace(a.Value)))
                 {
-                    <div class="row">
-                        @foreach (var attr in Model.AttributeValues)
+                    <div class="row g-3">
+                        @foreach (var attr in Model.AttributeValues.Where(a => !string.IsNullOrWhiteSpace(a.Value)))
                         {
-                            <div class="col-md-6 mb-2">
-                                <div class="border rounded-3 p-2 bg-white shadow-sm">
+                            <div class="col-md-6">
+                                <div class="border rounded-3 p-3 bg-white shadow-sm h-100 d-flex justify-content-between align-items-center">
                                     <strong class="text-dark">@attr.CategoryAttributeDefinition?.Name:</strong>
                                     <span class="text-primary fw-semibold">@attr.Value</span>
                                 </div>
@@ -67,15 +78,29 @@
 
             <!-- Buttons -->
             <div class="d-flex justify-content-between mt-4">
-                <a asp-action="Index" class="btn btn-outline-light px-4 border-2"
-                   style="border-color:#ffd700; color:#ffd700;">
+                <a asp-action="Index" class="btn btn-outline-secondary btn-lg px-4 shadow-sm">
                     <i class="bi bi-arrow-left-circle"></i> Back to List
                 </a>
-                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn px-5 shadow-lg fw-bold"
-                   style="background: linear-gradient(135deg,#ffd700,#ffb400); color:#2c2c2c;">
+                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-gradient btn-lg px-5 shadow-sm">
                     <i class="bi bi-pencil-square"></i> Edit
                 </a>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+.text-purple { color: #6a11cb; }
+.btn-gradient {
+    background: linear-gradient(135deg,#6a11cb,#2575fc);
+    color: #fff;
+    border: none;
+}
+.btn-gradient:hover {
+    filter: brightness(1.1);
+    transform: translateY(-2px);
+    transition: all 0.3s ease;
+}
+</style>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />

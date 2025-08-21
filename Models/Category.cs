@@ -15,6 +15,8 @@ namespace ProductMgmt.Models
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }
 
+        public string? ImageUrl { get; set; }
+
         public ICollection<CategoryAttributeDefinition> AttributeDefinitions { get; set; } 
             = new List<CategoryAttributeDefinition>();
 

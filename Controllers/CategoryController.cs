@@ -8,14 +8,18 @@ namespace ProductMgmt.Controllers
     public class CategoryController : Controller
     {
         private readonly ApplicationDbContext _context;
-        public CategoryController(ApplicationDbContext context) => _context = context;
+        private readonly IWebHostEnvironment _env;
+
+        public CategoryController(ApplicationDbContext context, IWebHostEnvironment env)
+        {
+            _context = context;
+            _env = env;
+        }
 
         // GET: /Category
         public IActionResult Index()
         {
-            var categories = _context.Categories
-                .Include(c => c.AttributeDefinitions) // Include related attributes
-                .ToList();
+            var categories = _context.Categories.Include(c => c.AttributeDefinitions).ToList();
             return View(categories);
         }
 
@@ -25,15 +29,27 @@ namespace ProductMgmt.Controllers
         // POST: /Category/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(Category category)
+        public IActionResult Create(Category category, IFormFile? ImageFile)
         {
-            if (!ModelState.IsValid)
-            {
-                return View(category);
-            }
+            if (!ModelState.IsValid) return View(category);
 
             category.Slug = category.Name.Trim().ToLower().Replace(" ", "-");
             category.CreatedAt = DateTime.UtcNow;
+
+            // Save uploaded image
+            if (ImageFile != null && ImageFile.Length > 0)
+            {
+                var uploads = Path.Combine(_env.WebRootPath, "images/categories");
+                if (!Directory.Exists(uploads)) Directory.CreateDirectory(uploads);
+
+                var fileName = Guid.NewGuid() + Path.GetExtension(ImageFile.FileName);
+                var filePath = Path.Combine(uploads, fileName);
+
+                using var stream = new FileStream(filePath, FileMode.Create);
+                ImageFile.CopyTo(stream);
+
+                category.ImageUrl = "/images/categories/" + fileName;
+            }
 
             _context.Categories.Add(category);
             _context.SaveChanges();
@@ -52,7 +68,7 @@ namespace ProductMgmt.Controllers
         // POST: /Category/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(Category category)
+        public IActionResult Edit(Category category, IFormFile? ImageFile)
         {
             if (!ModelState.IsValid) return View(category);
 
@@ -64,6 +80,20 @@ namespace ProductMgmt.Controllers
             existing.Slug = category.Name.Trim().ToLower().Replace(" ", "-");
             existing.UpdatedAt = DateTime.UtcNow;
 
+            if (ImageFile != null && ImageFile.Length > 0)
+            {
+                var uploads = Path.Combine(_env.WebRootPath, "images/categories");
+                if (!Directory.Exists(uploads)) Directory.CreateDirectory(uploads);
+
+                var fileName = Guid.NewGuid() + Path.GetExtension(ImageFile.FileName);
+                var filePath = Path.Combine(uploads, fileName);
+
+                using var stream = new FileStream(filePath, FileMode.Create);
+                ImageFile.CopyTo(stream);
+
+                existing.ImageUrl = "/images/categories/" + fileName;
+            }
+
             _context.SaveChanges();
             return RedirectToAction(nameof(Index));
         }
@@ -71,10 +101,8 @@ namespace ProductMgmt.Controllers
         // GET: /Category/Details/5
         public IActionResult Details(int id)
         {
-            var category = _context.Categories
-                .Include(c => c.AttributeDefinitions)
+            var category = _context.Categories.Include(c => c.AttributeDefinitions)
                 .FirstOrDefault(c => c.Id == id);
-
             if (category == null) return NotFound();
             return View(category);
         }
@@ -87,6 +115,12 @@ namespace ProductMgmt.Controllers
             var category = _context.Categories.Find(id);
             if (category != null)
             {
+                if (!string.IsNullOrEmpty(category.ImageUrl))
+                {
+                    var filePath = Path.Combine(_env.WebRootPath, category.ImageUrl.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
+                    if (System.IO.File.Exists(filePath)) System.IO.File.Delete(filePath);
+                }
+
                 _context.Categories.Remove(category);
                 _context.SaveChanges();
             }

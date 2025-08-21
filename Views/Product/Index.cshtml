@@ -1,59 +1,95 @@
 @model IEnumerable<ProductMgmt.Models.Product>
+@using System.Globalization
+
 @{
     ViewData["Title"] = "Products";
+    var categories = ViewBag.Categories as IEnumerable<ProductMgmt.Models.Category>;
 }
 
-<h2 class="mb-4 text-purple">Products</h2>
+<h2 class="mb-4 text-dark fw-bold">
+    <i class="bi bi-shop me-2"></i> Products
+</h2>
 
-<p>
-    <a asp-action="Create" class="btn btn-lg fw-bold"
-       style="background: linear-gradient(135deg,#8e24aa,#4e0d3a); color:#ffd700;">
-       <i class="bi bi-plus-circle me-2"></i> Create New Product
+<div class="d-flex flex-wrap align-items-center mb-4 gap-2">
+    <a asp-action="Create" class="btn btn-lg fw-bold create-btn shadow-sm">
+        <i class="bi bi-plus-circle me-2"></i> Add New Product
     </a>
-</p>
 
-<div class="row g-4">
+    <!-- Search -->
+    <input type="text" id="searchBox" class="form-control w-auto shadow-sm" placeholder="🔍 Search by name or SKU" />
+
+    <!-- Filter Category -->
+    <select id="categoryFilter" class="form-select w-auto shadow-sm">
+        <option value="">All Categories</option>
+        @foreach (var cat in Model.Select(a => a.Category).Where(c => c != null).Distinct())
+        {
+            <option value="@cat!.Name">@cat!.Name</option>
+        }
+    </select>
+
+    <!-- Sort -->
+    <select id="sortFilter" class="form-select w-auto shadow-sm">
+        <option value="">Sort by</option>
+        <option value="name">Name</option>
+        <option value="priceLow">Price: Low to High</option>
+        <option value="priceHigh">Price: High to Low</option>
+    </select>
+</div>
+
+<div class="row g-4" id="productContainer">
     @foreach (var product in Model)
     {
-        <div class="col-md-6 col-lg-4 animate__animated animate__fadeInUp">
-            <div class="card shadow-lg rounded-4 h-100 hover-shadow">
-                <div class="card-header text-white fw-bold"
-                     style="background: linear-gradient(135deg,#4e0d3a,#8e24aa);">
-                    @product.Name
-                </div>
-                <div class="card-body">
-                    <p><strong>SKU:</strong> @product.SKU</p>
-                    <p><strong>Price:</strong> <span class="text-success fw-bold">@product.Price.ToString("C")</span></p>
-                    <p><strong>Category:</strong> @product.Category?.Name</p>
-                    <p><strong>Attributes:</strong></p>
-                    @if (product.AttributeValues != null && product.AttributeValues.Any())
+        <div class="col-sm-6 col-md-4 col-lg-3 product-item animate__animated animate__fadeInUp" 
+             data-name="@product.Name.ToLower()" 
+             data-sku="@product.SKU.ToLower()" 
+             data-category="@product.Category?.Name" 
+             data-price="@product.Price">
+             
+            <div class="card product-card shadow-sm rounded-4 h-100">
+                <div class="position-relative">
+                    <img src="@(!string.IsNullOrEmpty(product.ImageUrl) ? product.ImageUrl : "https://via.placeholder.com/400x200.png?text=No+Image")" 
+                         class="card-img-top rounded-top-4" alt="@product.Name">
+                    @if (product.Category != null)
                     {
-                        <ul class="list-group list-group-flush">
-                            @foreach (var attr in product.AttributeValues)
-                            {
-                                <li class="list-group-item border-0 p-1">
-                                    <strong class="text-purple">@attr.CategoryAttributeDefinition?.Name:</strong> 
-                                    <span class="text-dark">@attr.Value</span>
-                                </li>
-                            }
-                        </ul>
-                    }
-                    else
-                    {
-                        <span class="text-muted fst-italic">No attributes</span>
+                        <span class="badge category-badge">@product.Category.Name</span>
                     }
                 </div>
-                <div class="card-footer d-flex justify-content-between bg-white border-0">
-                    <a asp-action="Details" asp-route-id="@product.Id" class="btn btn-sm btn-info">
-                        <i class="bi bi-eye"></i> Details
-                    </a>
-                    <a asp-action="Edit" asp-route-id="@product.Id" class="btn btn-sm btn-warning">
-                        <i class="bi bi-pencil-square"></i> Edit
-                    </a>
-                    <form asp-action="Delete" asp-route-id="@product.Id" method="post" class="d-inline">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title fw-bold text-truncate">@product.Name</h5>
+                    <p class="text-muted mb-1">SKU: @product.SKU</p>
+                    <p class="price mb-2 fw-bold">@product.Price.ToString("C", new CultureInfo("en-IN"))</p>
+
+                    <div class="mb-2 flex-grow-1">
+                        @if (product.AttributeValues != null && product.AttributeValues.Any())
+                        {
+                            <ul class="list-unstyled mb-0">
+                                @foreach (var attr in product.AttributeValues.Where(a => !string.IsNullOrWhiteSpace(a.Value)))
+                                {
+                                    <li class="attr-item">
+                                        <strong>@attr.CategoryAttributeDefinition?.Name:</strong> @attr.Value
+                                    </li>
+                                }
+                            </ul>
+                        }
+                        else
+                        {
+                            <span class="text-muted fst-italic">No attributes</span>
+                        }
+                    </div>
+
+                    <div class="mt-auto d-flex justify-content-between">
+                        <a asp-action="Details" asp-route-id="@product.Id" class="btn btn-sm btn-outline-primary w-50 me-1">
+                            <i class="bi bi-eye me-1"></i> View
+                        </a>
+                        <a asp-action="Edit" asp-route-id="@product.Id" class="btn btn-sm btn-outline-warning w-50 ms-1">
+                            <i class="bi bi-pencil me-1"></i> Edit
+                        </a>
+                    </div>
+
+                    <form asp-action="Delete" asp-route-id="@product.Id" method="post" class="mt-2">
                         @Html.AntiForgeryToken()
-                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?');">
-                            <i class="bi bi-trash"></i> Delete
+                        <button type="submit" class="btn btn-sm btn-outline-danger w-100" onclick="return confirm('Are you sure?');">
+                            <i class="bi bi-trash me-1"></i> Delete
                         </button>
                     </form>
                 </div>
@@ -62,18 +98,62 @@
     }
 </div>
 
+@section Scripts {
+<script>
+    const searchBox = document.getElementById("searchBox");
+    const categoryFilter = document.getElementById("categoryFilter");
+    const sortFilter = document.getElementById("sortFilter");
+    const productContainer = document.getElementById("productContainer");
+
+    function filterProducts() {
+        let searchText = searchBox.value.toLowerCase();
+        let selectedCategory = categoryFilter.value;
+        let products = [...document.querySelectorAll(".product-item")];
+
+        products.forEach(p => {
+            let name = p.dataset.name;
+            let sku = p.dataset.sku;
+            let category = p.dataset.category;
+
+            let matchesSearch = name.includes(searchText) || sku.includes(searchText);
+            let matchesCategory = !selectedCategory || category === selectedCategory;
+
+            p.style.display = (matchesSearch && matchesCategory) ? "" : "none";
+        });
+    }
+
+    function sortProducts() {
+        let products = [...document.querySelectorAll(".product-item")];
+        let sortBy = sortFilter.value;
+
+        products.sort((a, b) => {
+            if (sortBy === "name") return a.dataset.name.localeCompare(b.dataset.name);
+            if (sortBy === "priceLow") return parseFloat(a.dataset.price) - parseFloat(b.dataset.price);
+            if (sortBy === "priceHigh") return parseFloat(b.dataset.price) - parseFloat(a.dataset.price);
+            return 0;
+        });
+
+        products.forEach(p => productContainer.appendChild(p));
+    }
+
+    searchBox.addEventListener("input", filterProducts);
+    categoryFilter.addEventListener("change", filterProducts);
+    sortFilter.addEventListener("change", sortProducts);
+</script>
+}
+
 <style>
-.hover-shadow:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 15px 25px rgba(0,0,0,0.15);
-    transition: all 0.3s ease-in-out;
-}
-.text-purple {
-    color: #8e24aa;
-}
-.card-header {
-    font-size: 1.2rem;
-}
+.product-card { transition: transform 0.3s ease, box-shadow 0.3s ease; border: none; }
+.product-card:hover { transform: translateY(-10px); box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
+
+.create-btn { background: linear-gradient(135deg, #ff416c, #ff4b2b); color: #fff; border: none; }
+.create-btn:hover { filter: brightness(1.1); transform: translateY(-2px); }
+
+.price { color: #ff4b2b; font-size: 1.2rem; }
+
+.category-badge { position: absolute; top: 10px; right: 10px; background: #ff416c; color: #fff; padding: 5px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; }
+
+.attr-item { font-size: 0.85rem; color: #555; }
 </style>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>

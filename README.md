@@ -28,35 +28,42 @@ Hardcoding these attributes in the Product table would break normalization and r
 ## Database Structure
 
 - **Category**
-  - Id (PK)
-  - Name
-  - Slug
-  - Description
-  - CreatedAt
-  - UpdatedAt
+  - Id (PK, int)
+  - Name (nvarchar(100))
+  - Slug (nvarchar(150))
+  - Description (nvarchar(500), nullable)
+  - CreatedAt (datetime)
+  - UpdatedAt (datetime)
 
 - **CategoryAttributeDefinition**
-  - Id (PK)
-  - Name
+  - Id (PK, int)
+  - Name (nvarchar(100))
   - DataType (`string`, `number`, `date`, `bool`)
-  - IsRequired
-  - DisplayOrder
-  - CategoryId (FK)
+  - IsRequired (bool)
+  - DisplayOrder (int)
+  - CategoryId (FK, int)
 
 - **Product**
-  - Id (PK)
-  - Name
-  - SKU
-  - Price
-  - CategoryId (FK)
-  - CreatedAt
-  - UpdatedAt
+  - Id (PK, int)
+  - Name (nvarchar(150))
+  - SKU (nvarchar(100))
+  - Price (decimal)
+  - CategoryId (FK, int)
+  - CreatedAt (datetime)
+  - UpdatedAt (datetime)
 
 - **ProductAttributeValue**
-  - Id (PK)
-  - ProductId (FK)
-  - CategoryAttributeDefinitionId (FK)
-  - Value
+  - Id (PK, int)
+  - ProductId (FK, int)
+  - CategoryAttributeDefinitionId (FK, int)
+  - Value (nvarchar(500))
+
+---
+
+## ERD & Class Diagram
+
+- [ERD](Docs/ERD.png) – Shows entities, relationships, and keys  
+- [Class Diagram](Docs/ClassDiagram.png) – Shows classes, relationships, and methods
 
 ---
 
@@ -65,10 +72,13 @@ Hardcoding these attributes in the Product table would break normalization and r
 1. Install **.NET 9.0 SDK** and **MySQL**.
 2. Create a MySQL database: `ProductMgmtDb`.
 3. Update `appsettings.json` connection string:
-   ```json
-   "ConnectionStrings": {
-       "DefaultConnection": "server=localhost;database=ProductMgmtDb;user=root;password=YourPassword"
-   }
+
+```json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "server=localhost;database=ProductMgmtDb;user=root;password=YourPassword"
+  }
+}
 
 4. Apply migrations:
    dotnet ef database update
@@ -80,7 +90,7 @@ Hardcoding these attributes in the Product table would break normalization and r
   - Create Categories: Go to Categories → Create.
   - Define Attributes: On category details page, add attributes like RAM, Color, Size.
   - Create Products: Go to Products → Create. Select category, dynamic attribute form appears.
-  - Edit/Details/Delete: Manage both categories and attributes.
+  - Edit / Details / Delete: Manage both categories and attributes from the admin panel.
 
 - **Features**
   - Full CRUD for Products, Categories, Attributes.
@@ -88,9 +98,16 @@ Hardcoding these attributes in the Product table would break normalization and r
   - Slug generation and timestamps.
   - Validation via ProductValidationService.
   - Normalized EAV schema for scalability.
+  - Real-time search, filtering, and sorting in UI (like Amazon/Flipkart style).
 
 - **Screenshots**
-  - ./Docs/screenshot-dashboard.png
-  - ./Docs/screenshot-product-creation.png
-  - ./Docs/screenshot-category-creation.png
+![Dashboard](Docs/dashboard.png)
+![Category Index](Docs/category-index.png)
+![Category Create](Docs/category-creation.png)
+![Category Detail](Docs/category-details.png)
+![Product Index](Docs/product-index.png)
+![Product Create](Docs/product-creation.png)
+![Product Detail](Docs/product-details.png)
+![Category Create](Docs/attribute-index.png)
+![Category Detail](Docs/attribute-details.png)
 
