@@ -141,6 +141,13 @@ dotnet run
 
 ## Notes
 
-* Ensure all `Docs/` images are uploaded in your GitHub repository.
-* This project uses **Bootstrap 5**, **jQuery**, and **Animate.css** for UI enhancements.
-* Designed for scalability: easily add new product categories and attributes without DB schema changes.
+- The screenshots in the `Docs/` folder are for showcase purposes only.  
+  The actual project assets (images, CSS, JS) are stored in `wwwroot`.
+- This project is built using:
+  - **Front-end:** HTML, CSS, Bootstrap 5, jQuery, JavaScript
+  - **Back-end:** C# with ASP.NET Core MVC
+  - **Database:** MySQL with Entity Framework Core migrations
+- Designed for scalability: easily add new product categories and attributes without DB schema changes.
+- Apply database migrations with:
+  ```bash
+  dotnet ef database update
