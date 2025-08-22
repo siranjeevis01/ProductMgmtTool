@@ -1,6 +1,6 @@
 # Product Management Tool
 
-An internal ASP.NET Core MVC tool for managing a dynamic e-commerce product catalog with category-specific attributes.
+An internal **ASP.NET Core MVC** tool for managing a dynamic e‑commerce product catalog with **category‑specific attributes**.
 
 ---
 
@@ -8,78 +8,90 @@ An internal ASP.NET Core MVC tool for managing a dynamic e-commerce product cata
 
 ### Core Problem:
 
-Products from different categories have **different attributes**. For example:
+Different product categories need **different attributes** (Smartphones → RAM/OS; Dresses → Size/Color). Hard‑coding attributes on the `Product` table couples the schema to business rules and breaks normalization.
 
-* Smartphones: RAM, Storage, OS
-* Dresses: Size, Color, Material
+### The Approach: EAV (Entity‑Attribute‑Value) per Category
+We use a **category‑scoped EAV** model:
 
-Hardcoding these attributes in the Product table would break normalization and require frequent schema changes.
+- **Category** defines a set of **CategoryAttributeDefinition** rows (name, type, required, order).
+- **Product** belongs to a **Category**.
+- Each **Product** stores its attribute values as **ProductAttributeValue** rows that reference the corresponding attribute definition.
 
-### Solution: **Entity-Attribute-Value (EAV) Pattern**
+**Why this design?**
 
-* **Scalability:** Add new categories without changing the DB schema.
-* **Flexibility:** Each category has its own attributes via `CategoryAttributeDefinitions`.
-* **Normalization:** Data is stored in separate tables:
-
-  * `Category`
-  * `CategoryAttributeDefinition`
-  * `Product`
-  * `ProductAttributeValue`
-* **Trade-off:** Fetching a product with all attributes requires joins across tables.
+- **Scalable / Future‑proof**: add categories and attributes without altering tables.
+- **Normalized**: no sparse columns or NULL clutter on the `Product` table.
+- **Flexible**: supports heterogeneous categories.
+- **Trade‑off**: reading/writing requires joins and validation logic (handled by `ProductValidationService`).
 
 ---
 
 ## Database Structure
 
-* **Category**
+### Category
+- Id (PK, int)  
+- Name (nvarchar(100))  
+- Slug (nvarchar(150))  
+- Description (nvarchar(500), nullable)  
+- ImageUrl (nvarchar(500), nullable)  
+- CreatedAt (datetime)  
+- UpdatedAt (datetime, nullable)
 
-  * Id (PK, int)
-  * Name (nvarchar(100))
-  * Slug (nvarchar(150))
-  * Description (nvarchar(500), nullable)
-  * CreatedAt (datetime)
-  * UpdatedAt (datetime)
+### CategoryAttributeDefinition
+- Id (PK, int)  
+- Name (nvarchar(100))  
+- Slug (nvarchar(150))  
+- DataType (`string`, `number`, `date`, `bool`)  
+- IsRequired (bool)  
+- DisplayOrder (int)  
+- CategoryId (FK → Category.Id)  
+- CreatedAt (datetime)  
+- UpdatedAt (datetime, nullable)
 
-* **CategoryAttributeDefinition**
+### Product
+- Id (PK, int)  
+- Name (nvarchar(150))  
+- Slug (nvarchar(150))  
+- SKU (nvarchar(100))  
+- Price (decimal(18,2))  
+- ImageUrl (nvarchar(500), nullable)  
+- CategoryId (FK → Category.Id)  
+- CreatedAt (datetime)  
+- UpdatedAt (datetime, nullable)
 
-  * Id (PK, int)
-  * Name (nvarchar(100))
-  * DataType (`string`, `number`, `date`, `bool`)
-  * IsRequired (bool)
-  * DisplayOrder (int)
-  * CategoryId (FK, int)
+### ProductAttributeValue
+- Id (PK, int)  
+- ProductId (FK → Product.Id)  
+- CategoryAttributeDefinitionId (FK → CategoryAttributeDefinition.Id)  
+- Value (nvarchar(500))
 
-* **Product**
+### Indexes
 
-  * Id (PK, int)
-  * Name (nvarchar(150))
-  * SKU (nvarchar(100))
-  * Price (decimal)
-  * CategoryId (FK, int)
-  * CreatedAt (datetime)
-  * UpdatedAt (datetime)
-
-* **ProductAttributeValue**
-
-  * Id (PK, int)
-  * ProductId (FK, int)
-  * CategoryAttributeDefinitionId (FK, int)
-  * Value (nvarchar(500))
+- Unique: `Category (Slug)`
+- Unique: `Product (Slug)`, `Product (SKU)`
+- Composite: `ProductAttributeValue (ProductId, CategoryAttributeDefinitionId)` — prevents duplicates per product/attribute.
 
 ---
 
 ## ERD & Class Diagram
 
-* [ERD](Docs/ERD.png) – Shows entities, relationships, and keys
-* [Class Diagram](Docs/ClassDiagram.png) – Shows classes, relationships, and methods
+![ERD](Docs/ERD.png)
+![Class Diagram](Docs/ClassDiagram.png)
+
+(See the images for keys, relationships, and cardinalities.)
 
 ---
 
 ## How to Run
 
-1. Install **.NET 9.0 SDK** and **MySQL**.
-2. Create a MySQL database: `ProductMgmtDb`.
-3. Update `appsettings.json` connection string:
+1. Install **.NET 9.0 SDK** and **MySQL** (or switch provider to SQL Server/PostgreSQL if preferred).
+2. Create database:
+
+```sql
+CREATE DATABASE ProductMgmtDb;
+```
+
+3. Update `appsettings.json`:
 
 ```json
 {
@@ -101,27 +113,36 @@ dotnet ef database update
 dotnet run
 ```
 
-6. Navigate to [https://localhost:5000](https://localhost:5000) to access the application.
+6. Browse to `https://localhost:5001` or `http://localhost:5000` (per your launch settings).
 
 ---
 
 ## Usage Flow
 
-* **Create Categories:** Go to Categories → Create.
-* **Define Attributes:** On category details page, add attributes like RAM, Color, Size.
-* **Create Products:** Go to Products → Create. Select category, dynamic attribute form appears.
-* **Edit / Details / Delete:** Manage both categories and attributes from the admin panel.
+- **Create Categories** → Add a category (e.g., Smartphones, Dresses).  
+- **Define Attributes** → For each category, define attributes (e.g., RAM, Color, Size).  
+- **Create Products** → Select category → dynamic attribute form appears.  
+- **Manage** → Edit, view, or delete categories, attributes, and products.
 
 ---
 
 ## Features
 
-* Full CRUD for Products, Categories, Attributes
-* Dynamic attribute forms per category
-* Slug generation and timestamps
-* Validation via `ProductValidationService`
-* Normalized EAV schema for scalability
-* Real-time search, filtering, and sorting in UI (like Amazon/Flipkart style)
+- CRUD for **Categories**, **Attributes**, **Products**  
+- Dynamic attribute forms per category  
+- Slug generation & timestamps  
+- Validation via `ProductValidationService`  
+- Normalized EAV schema for scalability  
+- Real‑time search, filtering, and sorting (UI)
+
+---
+
+## Tech Stack
+
+- **Frontend**: HTML, CSS, Bootstrap 5, jQuery  
+- **Backend**: C# (ASP.NET Core MVC)  
+- **ORM**: EF Core
+- **Database**: MySQL (tested), compatible with others
 
 ---
 
@@ -141,13 +162,5 @@ dotnet run
 
 ## Notes
 
-- The screenshots in the `Docs/` folder are for showcase purposes only.  
-  The actual project assets (images, CSS, JS) are stored in `wwwroot`.
-- This project is built using:
-  - **Front-end:** HTML, CSS, Bootstrap 5, jQuery, JavaScript
-  - **Back-end:** C# with ASP.NET Core MVC
-  - **Database:** MySQL with Entity Framework Core migrations
-- Designed for scalability: easily add new product categories and attributes without DB schema changes.
-- Apply database migrations with:
-  ```bash
-  dotnet ef database update
+- Screenshots live in `Docs/`; static assets are in `wwwroot/`.  
+- Schema is **future‑proof**: add categories/attributes without schema changes.
