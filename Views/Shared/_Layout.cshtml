@@ -102,6 +102,12 @@
                     <li class="nav-item"><a class="nav-link fw-medium" href="/Category">Categories</a></li>
                     <li class="nav-item"><a class="nav-link fw-medium" href="/Attribute">Attributes</a></li>
                     <li class="nav-item"><a class="nav-link fw-medium" href="/Product">Products</a></li>
+                    <li class="nav-item">
+                        <a class="nav-link fw-medium" asp-controller="Cart" asp-action="Index">
+                            <i class="bi bi-cart"></i> 
+                            <span class="cart-count badge bg-danger" id="cartCount">0</span>
+                        </a>
+                    </li>
                 </ul>
             </div>
         </div>

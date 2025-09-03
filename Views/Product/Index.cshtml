@@ -47,8 +47,9 @@
              
             <div class="card product-card shadow-sm rounded-4 h-100">
                 <div class="position-relative">
-                    <img src="@(!string.IsNullOrEmpty(product.ImageUrl) ? product.ImageUrl : "https://via.placeholder.com/400x200.png?text=No+Image")" 
-                         class="card-img-top rounded-top-4" alt="@product.Name">
+                    <img src="@(!string.IsNullOrEmpty(product.ImageUrl) ? product.ImageUrl : "/images/product-placeholder.png")"
+                         class="card-img-top rounded-top-4" alt="@product.Name" 
+                         onerror="this.src=/images/product-placeholder.png">
                     @if (product.Category != null)
                     {
                         <span class="badge category-badge">@product.Category.Name</span>
@@ -58,7 +59,7 @@
                     <h5 class="card-title fw-bold text-truncate">@product.Name</h5>
                     <p class="text-muted mb-1">SKU: @product.SKU</p>
                     <p class="price mb-2 fw-bold">@product.Price.ToString("C", new CultureInfo("en-IN"))</p>
-
+        
                     <div class="mb-2 flex-grow-1">
                         @if (product.AttributeValues != null && product.AttributeValues.Any())
                         {
@@ -76,7 +77,21 @@
                             <span class="text-muted fst-italic">No attributes</span>
                         }
                     </div>
-
+        
+                    <!-- Add to Cart Section -->
+                    <div class="add-to-cart mb-3">
+                        <div class="input-group input-group-sm">
+                            <button class="btn btn-outline-secondary minus-btn" type="button">-</button>
+                            <input type="number" class="form-control text-center quantity-input" 
+                                   value="1" min="1" data-product-id="@product.Id">
+                            <button class="btn btn-outline-secondary plus-btn" type="button">+</button>
+                            <button class="btn btn-success add-cart-btn" type="button" 
+                                    data-product-id="@product.Id">
+                                <i class="bi bi-cart-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+        
                     <div class="mt-auto d-flex justify-content-between">
                         <a asp-action="Details" asp-route-id="@product.Id" class="btn btn-sm btn-outline-primary w-50 me-1">
                             <i class="bi bi-eye me-1"></i> View
@@ -85,7 +100,7 @@
                             <i class="bi bi-pencil me-1"></i> Edit
                         </a>
                     </div>
-
+        
                     <form asp-action="Delete" asp-route-id="@product.Id" method="post" class="mt-2">
                         @Html.AntiForgeryToken()
                         <button type="submit" class="btn btn-sm btn-outline-danger w-100" onclick="return confirm('Are you sure?');">
@@ -99,7 +114,9 @@
 </div>
 
 @section Scripts {
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
+    // Filter and sort functionality
     const searchBox = document.getElementById("searchBox");
     const categoryFilter = document.getElementById("categoryFilter");
     const sortFilter = document.getElementById("sortFilter");
@@ -139,6 +156,69 @@
     searchBox.addEventListener("input", filterProducts);
     categoryFilter.addEventListener("change", filterProducts);
     sortFilter.addEventListener("change", sortProducts);
+
+    $(document).ready(function() {
+        updateCartCount();
+        
+        $('.plus-btn').click(function() {
+            var input = $(this).closest('.input-group').find('.quantity-input');
+            var value = parseInt(input.val());
+            input.val(value + 1);
+        });
+        
+        $('.minus-btn').click(function() {
+            var input = $(this).closest('.input-group').find('.quantity-input');
+            var value = parseInt(input.val());
+            if (value > 1) {
+                input.val(value - 1);
+            }
+        });
+        
+        // Add to cart
+        $('.add-cart-btn').click(function() {
+            var productId = $(this).data('product-id');
+            var quantity = $(this).closest('.add-to-cart').find('.quantity-input').val();
+            
+            $.post('@Url.Action("AddItem", "Cart")', {
+                productId: productId,
+                quantity: parseInt(quantity)
+            }, function(response) {
+                if (response.success) {
+                    showToast('Product added to cart!', 'success');
+                    
+                    $('#cartCount').text(response.itemCount);
+                    updateCartCount();
+                }
+            }).fail(function() {
+                showToast('Error adding product to cart', 'error');
+            });
+        });
+        
+        function updateCartCount() {
+            $.get('@Url.Action("GetCartItemCount", "Cart")', function(count) {
+                $('#cartCount').text(count);
+            });
+        }
+        
+        function showToast(message, type) {
+            // Simple toast implementation
+            var toast = $('<div class="toast-alert alert alert-' + (type === 'success' ? 'success' : 'danger') + '">' + message + '</div>');
+            toast.css({
+                position: 'fixed',
+                top: '20px',
+                right: '20px',
+                zIndex: 9999
+            });
+            
+            $('body').append(toast);
+            
+            setTimeout(function() {
+                toast.fadeOut(function() {
+                    $(this).remove();
+                });
+            }, 3000);
+        }
+    });
 </script>
 }
 
@@ -154,6 +234,29 @@
 .category-badge { position: absolute; top: 10px; right: 10px; background: #ff416c; color: #fff; padding: 5px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; }
 
 .attr-item { font-size: 0.85rem; color: #555; }
+
+/* Cart badge */
+.cart-count {
+    position: relative;
+    top: -10px;
+    right: 10px;
+    font-size: 0.7rem;
+}
+
+/* Toast notifications */
+.toast-alert {
+    animation: fadeIn 0.5s, fadeOut 0.5s 2.5s;
+}
+
+@@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@@keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
 </style>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
